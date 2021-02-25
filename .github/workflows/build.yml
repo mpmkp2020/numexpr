@@ -10,12 +10,12 @@ env:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build wheels on ${{ matrix.os }}, ${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-18.04, windows-latest, macos-latest]
-        arch: [auto, aarch64]
+        arch: [x86_64, aarch64]
         exclude:
           - os: windows-latest
             arch: aarch64
@@ -35,7 +35,7 @@ jobs:
           python -m pip install cibuildwheel~=1.8.0
 
       - uses: docker/setup-qemu-action@v1
-        if: ${{ matrix.arch == 'arch64' }}
+        if: ${{ matrix.arch == 'aarch64' }}
         name: Set up QEMU
 
       - name: Install Visual C++ for Python 2.7
@@ -44,7 +44,7 @@ jobs:
           choco install vcpython27 -f -y
 
       - name: Build wheels for CPython 2.7
-        if: ${{ matrix.arch != 'arch64' }}
+        if: ${{ matrix.arch != 'aarch64' }}
         run: |
           python -m cibuildwheel --output-dir wheelhouse
         env:
