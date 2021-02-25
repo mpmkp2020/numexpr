@@ -26,7 +26,10 @@ jobs:
 
       - name: Install cibuildwheel
         run: |
-          python -m pip install cibuildwheel==1.6.4
+          python -m pip install cibuildwheel~=1.8.0
+
+      - uses: docker/setup-qemu-action@v1
+        name: Set up QEMU
 
       - name: Install Visual C++ for Python 2.7
         if: runner.os == 'Windows'
@@ -50,6 +53,7 @@ jobs:
           python -m cibuildwheel --output-dir wheelhouse
         env:
           CIBW_BUILD: "cp36-*"
+          CIBW_ARCHS_LINUX: auto aarch64
 
       - name: Build wheels for CPython 3.7
         run: |
@@ -68,45 +72,6 @@ jobs:
           python -m cibuildwheel --output-dir wheelhouse
         env:
           CIBW_BUILD: "cp39-*"
-
-      - uses: actions/upload-artifact@v2
-        with:
-          path: ./wheelhouse/*.whl
-
-  build_wheels_aarch64:
-    name: Build aarch64
-    runs-on: ubuntu-18.04
-    strategy:
-      matrix:
-        os: [ubuntu-18.04]
-        arch: [aarch64]
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions/setup-python@v2
-        name: Install Python
-        with:
-          python-version: '3.7'
-
-      - uses: docker/setup-qemu-action@v1
-        name: Set up QEMU
-
-      - name: upgrade pip
-        run: |
-          python -m pip install --upgrade pip
-      
-      - name: Install cibuildwheel
-        run: |
-          python -m pip install cibuildwheel~=1.8.0
-     
-      - name: Build wheels
-        run: |
-          python -m cibuildwheel --output-dir wheelhouse
-        env:
-          CIBW_ARCHS_LINUX: ${{ matrix.arch }}
-          CIBW_SKIP: "pp* cp27-* cp35-*"
-          CIBW_BEFORE_ALL: pip install setuptools numpy
-          CIBW_TEST_COMMAND: python -c "import sys, numexpr; sys.exit(0 if numexpr.test().wasSuccessful() else 1)"
 
       - uses: actions/upload-artifact@v2
         with:
